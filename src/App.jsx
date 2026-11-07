@@ -11,13 +11,14 @@ import Shuffle from './components/Shuffle.jsx';
 import DecryptedText from './components/DecryptedText.jsx';
 const Lanyard = lazy(() => import('./components/Lanyard.jsx'));
 const PixelBlast = lazy(() => import('./components/PixelBlast.jsx'));
+const LightRays = lazy(() => import('./components/LightRays.jsx'));
 
 const bodyMarkup = template.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1] ?? '';
 const navItems = [
-  { label: 'Work', href: '#', target: '#work' },
-  { label: 'Journey', href: '#', target: '#journey' },
-  { label: 'Achievements', href: '#', target: '#achievements' },
-  { label: 'Contact', href: '#', target: '#contact' }
+  { label: 'Work', href: '#work', target: '#work' },
+  { label: 'Journey', href: '#journey', target: '#journey' },
+  { label: 'Achievements', href: '#achievements', target: '#achievements' },
+  { label: 'Contact', href: '#contact', target: '#contact' }
 ];
 
 const skills = {
@@ -54,6 +55,31 @@ function ContactBackdrop() {
 
 function PortfolioAscii() {
   return <div className="portfolio-ascii-visual"><a className="portfolio-title-link" href="#home" aria-label="Enter Paveesh's portfolio"><DecryptedText text="PORTFOLIO" animateOn="inViewHover" effect="scramble" sequential revealDirection="start" speed={60} maxIterations={10} hoverRadius={100} scrambleColor="#2bb673" loop={false} loopDelay={2000} useOriginalCharsOnly={false} characters="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()_+" clickMode="once" parentClassName="portfolio-title-type" className="portfolio-title-glyph" encryptedClassName="portfolio-title-encrypted" /></a></div>;
+}
+
+function PortfolioIntroBackground() {
+  return (
+    <div className="portfolio-rays-background" aria-hidden="true">
+      <div className="portfolio-rays-fallback" />
+      <VisualErrorBoundary fallback={null}>
+        <Suspense fallback={null}>
+          <LightRays raysOrigin="top-center" raysColor="#78d7be" raysSpeed={0.42} lightSpread={0.76} rayLength={3.1} rayDensity={1.2} tilt={10} raySharpness={0.4} glow={0.55} haze={0.36} atmosphere={0.35} intensity={0.8} followMouse={false} mouseInfluence={0} cursorShadow={false} clickPulse={false} noiseAmount={0.025} distortion={0.025} intro opacity={0.85} maxDevicePixelRatio={1.35} className="portfolio-light-rays" />
+        </Suspense>
+      </VisualErrorBoundary>
+    </div>
+  );
+}
+
+class VisualErrorBoundary extends React.Component {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  render() {
+    return this.state.hasError ? this.props.fallback : this.props.children;
+  }
 }
 
 function HeroHeading() {
@@ -202,7 +228,7 @@ function MobileMenu() {
   }, []);
   return (
     <div className={`mobile-navigation${open ? ' is-open' : ''}`} aria-hidden={!open}>
-      {navItems.map(item => <a key={item.href} href={item.href} tabIndex={open ? 0 : -1}>{item.label}</a>)}
+      {navItems.map(item => <a key={item.target} href={item.target} tabIndex={open ? 0 : -1}>{item.label}</a>)}
     </div>
   );
 }
@@ -212,6 +238,7 @@ function initPortfolioInteractions(shell) {
     document.body.classList.remove('mobile-nav-open');
     const toggle = shell.querySelector('.menu-toggle');
     toggle?.setAttribute('aria-expanded', 'false');
+    toggle?.setAttribute('aria-label', 'Open navigation');
     window.dispatchEvent(new CustomEvent('portfolio-mobile-nav', { detail: { open: false } }));
   };
 
@@ -221,6 +248,7 @@ function initPortfolioInteractions(shell) {
       const open = !document.body.classList.contains('mobile-nav-open');
       document.body.classList.toggle('mobile-nav-open', open);
       menuButton.setAttribute('aria-expanded', String(open));
+      menuButton.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
       window.dispatchEvent(new CustomEvent('portfolio-mobile-nav', { detail: { open } }));
       return;
     }
@@ -348,6 +376,7 @@ export default function App() {
         root.render(component);
         roots.push(root);
       };
+      mount('light-rays-intro-mount', <PortfolioIntroBackground />);
       mount('gooey-nav-mount', <AnimatedContent className="gooey-nav-entry" trigger="mount" distance={16} duration={0.85} ease="power3.out" blur={2}><GooeyNav items={navItems} initialActiveIndex={0} theme="dark" color="#78d7be" activeTextColor="#0b1011" size="md" frame={false} animationTime={760} particleCount={16} timeVariance={160} spread={48} gooeyness={0.58} /></AnimatedContent>);
       mount('ascii-intro-mount', <PortfolioAscii />);
       mount('hero-shuffle-mount', <HeroHeading />);
